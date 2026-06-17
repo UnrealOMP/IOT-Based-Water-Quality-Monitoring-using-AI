@@ -19,12 +19,7 @@ export const validateSensorReading = [
   body('temperature')
     .isFloat({ min: -50, max: 100 })
     .withMessage('Temperature must be between -50 and 100'),
-  
-  body('dissolvedOxygen')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Dissolved oxygen must be a non-negative number'),
-  
+
   body('timestamp')
     .optional()
     .isISO8601()

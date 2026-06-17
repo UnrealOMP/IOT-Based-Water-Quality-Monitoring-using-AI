@@ -67,7 +67,6 @@ export class SensorReadingRepository {
       tds: doc.tds,
       turbidity: doc.turbidity,
       temperature: doc.temperature,
-      dissolvedOxygen: doc.dissolvedOxygen,
       metadata: doc.metadata || {},
     });
   }

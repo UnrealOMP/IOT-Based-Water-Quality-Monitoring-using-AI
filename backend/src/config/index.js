@@ -1,6 +1,14 @@
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 dotenv.config();
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const defaultServiceAccountPath = join(
+  __dirname,
+  '../../water-quality-43909-firebase-adminsdk-fbsvc-ec33247bd7.json'
+);
 
 export const config = {
   server: {
@@ -15,7 +23,7 @@ export const config = {
     expiresIn: '7d',
   },
   deviceAuth: {
-    apiKeys: (process.env.DEVICE_API_KEYS || '').split(',').filter(Boolean),
+    apiKeys: (process.env.DEVICE_API_KEYS || '').split(',').map(k => k.trim()).filter(Boolean),
   },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10),
@@ -38,5 +46,15 @@ export const config = {
   },
   frontend: {
     url: process.env.FRONTEND_URL || 'http://localhost:3000',
+  },
+  firebase: {
+    enabled: process.env.FIREBASE_ENABLED !== 'false',
+    databaseURL:
+      process.env.FIREBASE_DATABASE_URL ||
+      'https://water-quality-43909-default-rtdb.firebaseio.com',
+    serviceAccountPath:
+      process.env.FIREBASE_SERVICE_ACCOUNT_PATH || defaultServiceAccountPath,
+    sensorPath: process.env.FIREBASE_SENSOR_PATH || 'water-quality/current',
+    deviceId: process.env.FIREBASE_DEVICE_ID || 'HARDWARE_DEVICE_001',
   },
 };

@@ -26,6 +26,11 @@ AI_DEBOUNCE_MS=5000
 AI_ROLLING_WINDOW_SIZE=10
 AI_TREND_DETECTION_SAMPLES=5
 FRONTEND_URL=http://localhost:3000
+FIREBASE_ENABLED=true
+FIREBASE_DATABASE_URL=https://water-quality-43909-default-rtdb.firebaseio.com
+FIREBASE_SERVICE_ACCOUNT_PATH=./water-quality-43909-firebase-adminsdk-fbsvc-ec33247bd7.json
+FIREBASE_SENSOR_PATH=water-quality/current
+FIREBASE_DEVICE_ID=HARDWARE_DEVICE_001
 ```
 
 Start backend:
@@ -63,8 +68,7 @@ curl -X POST http://localhost:3001/api/v1/sensor/ingest \
     "pH": 7.2,
     "tds": 350,
     "turbidity": 2.1,
-    "temperature": 24.5,
-    "dissolvedOxygen": 6.5
+    "temperature": 24.5
   }'
 ```
 

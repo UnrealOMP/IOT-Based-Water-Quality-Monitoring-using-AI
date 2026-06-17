@@ -12,8 +12,18 @@ const LiveSensorData = ({ reading }) => {
 
   const formatValue = (value, unit) => {
     if (value === null || value === undefined) return 'N/A';
-    return `${value.toFixed(2)} ${unit}`;
+    return `${Number(value).toFixed(2)} ${unit}`.trim();
   };
+
+  const formatTimestamp = (timestamp) => {
+    const parsed = new Date(timestamp);
+    if (!Number.isNaN(parsed.getTime()) && String(timestamp).length > 8) {
+      return parsed.toLocaleString();
+    }
+    return String(timestamp);
+  };
+
+  const ph = reading.ph ?? reading.pH;
 
   return (
     <div className="live-sensor-data">
@@ -21,7 +31,7 @@ const LiveSensorData = ({ reading }) => {
       <div className="sensor-grid">
         <div className="sensor-item">
           <span className="sensor-label">pH</span>
-          <span className="sensor-value">{formatValue(reading.pH, '')}</span>
+          <span className="sensor-value">{formatValue(ph, '')}</span>
         </div>
         <div className="sensor-item">
           <span className="sensor-label">TDS</span>
@@ -35,15 +45,9 @@ const LiveSensorData = ({ reading }) => {
           <span className="sensor-label">Temperature</span>
           <span className="sensor-value">{formatValue(reading.temperature, '°C')}</span>
         </div>
-        {reading.dissolvedOxygen !== null && (
-          <div className="sensor-item">
-            <span className="sensor-label">Dissolved Oxygen</span>
-            <span className="sensor-value">{formatValue(reading.dissolvedOxygen, 'mg/L')}</span>
-          </div>
-        )}
       </div>
       <div className="timestamp">
-        Last updated: {new Date(reading.timestamp).toLocaleString()}
+        Last updated: {formatTimestamp(reading.timestamp)}
       </div>
     </div>
   );

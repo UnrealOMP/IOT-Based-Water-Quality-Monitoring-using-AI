@@ -34,12 +34,6 @@ export const thresholds = {
     acceptable: { min: 18, max: 30 },
     // Outside acceptable range is poor
   },
-  dissolvedOxygen: {
-    excellent: { min: 6 }, // mg/L
-    good: { min: 4 },
-    acceptable: { min: 2 },
-    // < 2 is poor
-  },
 };
 
 /**
@@ -51,7 +45,6 @@ export const trendThresholds = {
   tds: { critical: 100, warning: 50 }, // ppm per sample
   turbidity: { critical: 2, warning: 1 }, // NTU per sample
   temperature: { critical: 3, warning: 1.5 }, // Celsius per sample
-  dissolvedOxygen: { critical: 1, warning: 0.5 }, // mg/L per sample
 };
 
 /**

@@ -64,6 +64,15 @@ export class DataQueryService {
     return await this.alertRepo.getRecent(deviceId, limit);
   }
 
+
+  /**
+ * Get the previous sensor reading (before the latest)
+ */
+async getPreviousReading(deviceId) {
+  const readings = await this.sensorReadingRepo.getRecent(deviceId, 2); // last 2 readings
+  return readings.length >= 2 ? readings[1] : null; // second latest
+}
+
   /**
    * Get dashboard summary
    */

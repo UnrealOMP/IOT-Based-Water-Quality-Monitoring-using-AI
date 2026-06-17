@@ -96,11 +96,7 @@ export class WaterQualityAI {
     analysis.parameters.tds = this._analyzeParameter('tds', reading.tds, recentReadings);
     analysis.parameters.turbidity = this._analyzeParameter('turbidity', reading.turbidity, recentReadings);
     analysis.parameters.temperature = this._analyzeParameter('temperature', reading.temperature, recentReadings);
-    
-    if (reading.dissolvedOxygen !== null) {
-      analysis.parameters.dissolvedOxygen = this._analyzeParameter('dissolvedOxygen', reading.dissolvedOxygen, recentReadings);
-    }
-    
+
     // Determine overall status (worst parameter wins)
     const statuses = Object.values(analysis.parameters).map(p => p.status);
     analysis.overallStatus = this._determineOverallStatus(statuses);
@@ -189,7 +185,7 @@ export class WaterQualityAI {
     const trends = {};
     const samples = recentReadings.slice(-this.trendDetectionSamples);
     
-    ['pH', 'tds', 'turbidity', 'temperature', 'dissolvedOxygen'].forEach(param => {
+    ['pH', 'tds', 'turbidity', 'temperature'].forEach(param => {
       const values = samples.map(r => r[param]).filter(v => v !== null && v !== undefined);
       if (values.length < 2) return;
       

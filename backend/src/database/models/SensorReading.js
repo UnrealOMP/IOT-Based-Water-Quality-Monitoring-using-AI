@@ -35,10 +35,6 @@ const sensorReadingSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  dissolvedOxygen: {
-    type: Number,
-    default: null,
-  },
   metadata: {
     type: mongoose.Schema.Types.Mixed,
     default: {},

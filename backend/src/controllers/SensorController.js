@@ -1,6 +1,9 @@
 import { SensorIngestionService } from '../services/SensorIngestionService.js';
 import { DataQueryService } from '../services/DataQueryService.js';
 import { logger } from '../config/logger.js';
+import { Alert } from '../domain/models/Alert.js';
+import { AlertRepository } from '../repositories/AlertRepository.js';
+import { sendAlertEmail } from '../services/EmailService.js';
 
 /**
  * Controller: Sensor
@@ -10,6 +13,7 @@ export class SensorController {
   constructor() {
     this.ingestionService = new SensorIngestionService();
     this.queryService = new DataQueryService();
+    this.alertRepo = new AlertRepository();
   }
 
   /**
@@ -19,7 +23,7 @@ export class SensorController {
   ingest = async (req, res, next) => {
     try {
       const sensorData = req.body;
-      const deviceId = sensorData.deviceId; // ✅ SOURCE OF TRUTH
+      const deviceId = sensorData.deviceId;
 
       if (!deviceId) {
         return res.status(400).json({
@@ -29,6 +33,29 @@ export class SensorController {
       }
 
       const result = await this.ingestionService.ingestReading(sensorData, deviceId);
+
+      // Fetch previous reading for comparison
+      const previous = await this.queryService.getPreviousReading(deviceId);
+      const current = result.reading;
+
+      if (previous && Math.abs(current.pH - previous.pH) > 2.0) {
+        const alert = new Alert({
+          deviceId,
+          severity: 'HIGH',
+          title: 'Rapid pH Shift',
+          message: `pH changed from ${previous.pH} to ${current.pH}`,
+          parameter: 'pH',
+          value: current.pH,
+          threshold: 2.0
+        });
+
+        await this.alertRepo.create(alert);
+        await sendAlertEmail(
+          process.env.ALERT_RECIPIENT,
+          `Rapid pH Change Detected`,
+          `Device ${deviceId} detected a rapid pH shift. Current: ${current.pH}, Previous: ${previous.pH}`
+        );
+      }
 
       res.status(201).json({
         success: true,

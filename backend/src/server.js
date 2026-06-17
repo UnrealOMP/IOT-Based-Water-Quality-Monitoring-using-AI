@@ -1,22 +1,30 @@
+import dotenv from 'dotenv';
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import { Server } from 'socket.io';
 import { config } from './config/index.js';
 import { logger } from './config/logger.js';
 import { connectDatabase } from './database/connection.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import apiRoutes from './routes/index.js';
+import {
+  initFirebaseListener,
+  stopFirebaseListener,
+  getLatestLiveData,
+} from './services/firebase.js';
 
 const app = express();
+dotenv.config();
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: "*",
+  origin: '*',
 }));
-
 
 // Compression
 app.use(compression());
@@ -38,6 +46,15 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Live Firebase data (not under /api/v1)
+app.get('/api/live-data', (req, res) => {
+  const data = getLatestLiveData();
+  if (!data) {
+    return res.status(503).json({ error: 'No live data yet' });
+  }
+  res.json(data);
+});
+
 // API routes
 app.use('/api/v1', apiRoutes);
 
@@ -52,17 +69,25 @@ app.use((req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' },
+});
+
 // Start server
 const startServer = async () => {
   try {
-    // Connect to database
     await connectDatabase();
-    
-    // Start HTTP server
-    app.listen(config.server.port, () => {
+
+    initFirebaseListener((data) => {
+      io.emit('sensor-update', data);
+    });
+
+    server.listen(config.server.port, () => {
       logger.info(`Server running on port ${config.server.port}`);
       logger.info(`Environment: ${config.server.env}`);
       logger.info(`API available at http://localhost:${config.server.port}/api/v1`);
+      logger.info(`Live data at http://localhost:${config.server.port}/api/live-data`);
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
@@ -75,10 +100,12 @@ startServer();
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down gracefully');
+  stopFirebaseListener();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   logger.info('SIGINT received, shutting down gracefully');
+  stopFirebaseListener();
   process.exit(0);
 });

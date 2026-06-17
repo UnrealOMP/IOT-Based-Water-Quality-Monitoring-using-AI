@@ -1,5 +1,7 @@
 import { DataQueryService } from '../services/DataQueryService.js';
 import { AlertRepository } from '../repositories/AlertRepository.js';
+import { sendAlertEmail } from '../services/EmailService.js';
+import { config } from '../config/index.js'; 
 
 /**
  * Controller: Alert
@@ -30,7 +32,7 @@ export class AlertController {
 
       res.json({
         success: true,
-        data: alerts.map(a => a.toJSON()),
+        data: alerts,
         count: alerts.length,
       });
     } catch (error) {
@@ -59,7 +61,46 @@ export class AlertController {
       res.json({
         success: true,
         message: 'Alert acknowledged',
-        data: alert.toJSON(),
+        data: alert,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /api/v1/alerts
+   * Create a new alert and send email if severity is HIGH or CRITICAL
+   */
+  createAlert = async (req, res, next) => {
+    try {
+      const alertData = req.body;
+      const alert = await this.alertRepo.create(alertData);
+
+      if (['HIGH', 'CRITICAL'].includes(alert.severity)) {
+        if (config.alerts.emailEnabled) {
+          const last = await this.alertRepo.getLastHighAlert(alert.deviceId, alert.parameter);
+    
+          const now = Date.now();
+          const lastSent = last?.timestamp?.getTime() || 0;
+          const minutesSinceLast = (now - lastSent) / 60000;
+
+          if (minutesSinceLast > 10) {
+            await sendAlertEmail(
+              process.env.ALERT_RECIPIENT,
+              `⚠ ${alert.severity} Alert: ${alert.parameter}`,
+              `Device ${alert.deviceId} reported ${alert.parameter} = ${alert.value} (threshold: ${alert.threshold})`
+            );
+          } else {
+            console.warn(`📭 Skipping email: Alert for ${alert.parameter} on ${alert.deviceId} was already sent ${minutesSinceLast.toFixed(2)} minutes ago`);
+          }
+        }
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Alert created and email sent (if applicable)',
+        data: alert,
       });
     } catch (error) {
       next(error);

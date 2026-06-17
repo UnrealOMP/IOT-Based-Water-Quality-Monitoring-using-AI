@@ -2,7 +2,14 @@
 
 export const DEMO_MODE = false;
 
-export const API_BASE_URL = "http://10.44.57.26:3001/api/v1";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+
+export const LIVE_DATA_URL =
+  import.meta.env.VITE_LIVE_DATA_URL || 'http://localhost:3001/api/live-data';
+
+export const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 let API_KEY = null;
 

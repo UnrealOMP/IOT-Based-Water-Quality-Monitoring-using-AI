@@ -64,7 +64,18 @@ cp .env.example .env
    - Set `MONGODB_URI` to your MongoDB connection string
    - Set `DEVICE_API_KEYS` with your device API keys (comma-separated)
    - Set `JWT_SECRET` for user authentication
+   - Set Firebase variables (see below)
    - Adjust other settings as needed
+
+Firebase configuration (optional, enabled by default):
+
+```env
+FIREBASE_ENABLED=true
+FIREBASE_DATABASE_URL=https://water-quality-43909-default-rtdb.firebaseio.com
+FIREBASE_SERVICE_ACCOUNT_PATH=./water-quality-43909-firebase-adminsdk-fbsvc-ec33247bd7.json
+FIREBASE_SENSOR_PATH=water-quality/current
+FIREBASE_DEVICE_ID=HARDWARE_DEVICE_001
+```
 
 5. Start MongoDB (if running locally):
 ```bash
@@ -117,7 +128,27 @@ Frontend will run on `http://localhost:3000`
 - `GET /api/v1/alerts/:deviceId?` - Get alerts
 - `POST /api/v1/alerts/:alertId/acknowledge` - Acknowledge alert
 
+### Live Firebase Data
+- `GET /api/live-data` - Latest processed sensor values from Firebase Realtime Database
+- Socket.io event `sensor-update` - Real-time push when Firebase `/water-quality/current` changes
+
 ## ESP32 Integration
+
+ESP32 devices can write processed sensor values directly to Firebase Realtime Database at `/water-quality/current`:
+
+```json
+{
+  "ph": 6.6,
+  "tds": 0,
+  "temperature": 32.9,
+  "turbidity": 97,
+  "timestamp": 179710
+}
+```
+
+The backend listens to this path, caches live data, pushes updates via Socket.io, and persists readings to MongoDB for AI evaluation.
+
+Alternatively, send HTTP POST to `/api/v1/sensor/ingest`:
 
 ### Sensor Data Format
 
@@ -129,7 +160,6 @@ Send POST request to `/api/v1/sensor/ingest` with:
   "tds": 350,
   "turbidity": 2.1,
   "temperature": 24.5,
-  "dissolvedOxygen": 6.5,
   "timestamp": "2024-01-15T10:30:00Z"
 }
 ```

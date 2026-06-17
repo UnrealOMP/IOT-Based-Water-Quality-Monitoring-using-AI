@@ -10,7 +10,6 @@ export class SensorReading {
     tds,
     turbidity,
     temperature,
-    dissolvedOxygen = null,
     metadata = {},
   }) {
     this.deviceId = deviceId;
@@ -19,7 +18,6 @@ export class SensorReading {
     this.tds = tds;
     this.turbidity = turbidity;
     this.temperature = temperature;
-    this.dissolvedOxygen = dissolvedOxygen;
     this.metadata = metadata;
   }
 
@@ -49,7 +47,6 @@ export class SensorReading {
       tds: this.tds,
       turbidity: this.turbidity,
       temperature: this.temperature,
-      dissolvedOxygen: this.dissolvedOxygen,
       metadata: this.metadata,
     };
   }

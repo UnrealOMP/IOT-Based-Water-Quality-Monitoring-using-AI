@@ -24,7 +24,6 @@ const SensorChart = ({ readings, parameter }) => {
       tds: 'TDS (ppm)',
       turbidity: 'Turbidity (NTU)',
       temperature: 'Temperature (°C)',
-      dissolvedOxygen: 'Dissolved Oxygen (mg/L)',
     };
     return labels[param] || param;
   };

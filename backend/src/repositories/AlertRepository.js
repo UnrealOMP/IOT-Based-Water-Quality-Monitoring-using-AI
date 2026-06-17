@@ -10,7 +10,7 @@ export class AlertRepository {
    * Save an alert
    */
   async create(alert) {
-    const doc = new AlertModel(alert.toJSON());
+    const doc = new AlertModel(alert);
     const saved = await doc.save();
     return this._toDomain(saved);
   }
@@ -55,6 +55,15 @@ export class AlertRepository {
     ).lean();
     
     return doc ? this._toDomain(doc) : null;
+  }
+
+  // Get latest HIGH or CRITICAL alert for device and parameter
+  async getLastHighAlert(deviceId, parameter) {
+    return await AlertModel.findOne({
+      deviceId,
+      parameter,
+      severity: { $in: ['HIGH', 'CRITICAL'] },
+    }).sort({ timestamp: -1 });
   }
 
   /**

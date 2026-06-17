@@ -38,7 +38,6 @@ export class SensorIngestionService {
         tds: rawData.tds,
         turbidity: rawData.turbidity,
         temperature: rawData.temperature,
-        dissolvedOxygen: rawData.dissolvedOxygen || null,
         metadata: rawData.metadata || {},
       });
 
